@@ -1,0 +1,157 @@
+---
+title: "Relationship between Party Performance and Constituency in Maharashtra"
+author: "Tanvi Dani"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: [Prez2.css, metropolis, metropolis-fonts]
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, echo = FALSE, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, echo = FALSE, warning = FALSE, message = FALSE,
+  dev = 'png',
+  fig.width = 8, fig.asp=0.80, fig.align= 'center', out.width= "80%")
+```
+``` {r, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(patchwork)
+
+
+library(knitr)
+library(readxl)
+library(ggplot2)
+library(kableExtra)
+
+df = read_csv('/Users/tanvidani/Library/CloudStorage/OneDrive-american.edu/Data Analysis/TCPD_Mah.csv')
+```
+``` {r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE, results - "hide"}
+
+#convert into factor
+
+# fct_count(df$MyNeta_education, prop = T)
+df$MyNeta_education = as_factor(df$MyNeta_education)
+
+df1 = df%>%
+  mutate(
+    Education_Level = fct_collapse(MyNeta_education,
+                                   Minimal = c('Illiterate', 'Literate', '5th Pass'),
+                                   HighSchool = c('8th Pass','10th Pass', '12th Pass'),
+                                   College = c('Graduate','Graduate Professional'),
+                                   Post_Grad = c('Post Graduate', 'Doctorate'),
+                                   Other = 'Others'
+    )
+  )
+```
+
+
+# Trivedi Center for Political Data
+
+### Comparing Party performance based on Constituencies
+
+
+- Trivedi Center for Political data- a research center at Ashoka University in India. 
+
+- Data on incumbents in the Individual Incumbency Data set
+
+- Presentation on data filtered for the state of Maharashtra and 2014, 2019 General Elections
+
+- Data has 8913 observations. 
+
+- Variables considered- Education Level, Constituency type
+
+``` {r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+df1 %>%
+  count(Constituency_Type) %>%
+  kbl(.,align = rep("c",5), digits = 1L) %>%
+    kable_classic(full_width = F, html_font = "Cambria")
+```
+
+
+---
+
+## Variable 1- Education level of Candidates
+
+``` {r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE, fig.asp= 0.60}
+df1%>%
+  ggplot(aes(x = Education_Level)) +
+  geom_bar(fill = 'steelblue2') +
+  scale_x_discrete(na.translate = F) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_minimal() + 
+   labs(x = "Education level of candidates")
+```
+
+
+---
+
+## Comparing Educational level across 3 constituencies
+
+### Elections considered: 
+
+- 2019 General Election
+- 2014 General Election
+
+
+### Constituency type
+
+  - GEN- General 
+  
+  - SC- Scheduled Caste
+  
+  - ST- Scheduled Tribe
+  
+  
+- Each candidate contests general elections from their specific reserved constituencies. All constituencies in a state are reserved for candidates within these 3 categories.  
+
+
+---
+
+## Mapping educational levels across constituencies
+
+
+``` {r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE, fig.width= 12, fig.asp=  0.60}
+df1 %>%
+  drop_na(Constituency_Type, Education_Level) %>%
+  ggplot(aes(x = Education_Level, fill = Constituency_Type)) +
+  geom_bar(position= 'dodge') +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1000), breaks = c(0, 200, 400, 600, 800, 1000)) +
+  theme_classic() +
+  labs(x = "Education level of candidates")
+
+```
+
+---
+
+## Observations 
+
+- Most candidates with high school and college level education are from the General Constituency
+- A significant number of SC constituency candidates have High School and College level education
+- Very few candidates from any of the constituencies have post-graduate education
+
+.pull-right[
+``` {r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE, fig.asp= 0.60}
+df1 %>%
+  group_by(Education_Level) %>%
+  count(Constituency_Type) %>%
+  pivot_wider(
+    names_from = Constituency_Type,
+    values_from = n
+  ) %>%
+  kbl(.,align = rep("c",5), digits = 1L) %>%
+    kable_classic(full_width = F, html_font = "Cambria")
+```
+]
+
+
+---
+
+class: center, middle
+
+## Conclusion 
+
+### Unlike common wisdom of candidates in General elections being mostly uneducated, we can see that a considerable number of candidates, from each category have had high school, college, and even post-graduate education. Candidates with minimal education are only 346 out of 8912 candidates from all 3 categories considered, which is 3.9%. The numbers for college graduates contensting elections can still be improved. 
